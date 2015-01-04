@@ -1,0 +1,133 @@
+<!doctype html>
+<title>multiartist canvas</title>
+<meta name="viewport" content="width=device-width,user-scalable=no">
+<!-- <script src="/bower_components/jquery/dist/jquery.js"></script> -->
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src='https://cdn.firebase.com/js/client/2.0.4/firebase.js'></script>
+
+<style>
+	html, body {
+		margin: 0; padding: 0;
+		overflow: hidden;
+	}
+	canvas {
+		background-color: rgba(0,0,0,0.1);
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 1;
+        max-width: 100%;
+        max-height: 100%;
+	}
+	#log {
+		max-width: 100%;
+		font-family: Helvetica, Arial;
+		text-align: center;
+	}
+</style>
+
+<div id="log"></div>
+<canvas></canvas>
+
+<script>
+var myDataRef = new Firebase('https://dazzling-torch-3750.firebaseio.com/');
+
+var mouseDown = false;
+var $canvas = $('canvas');
+var $log = $('#log').eq(0);
+var last = '';
+var ctx = $canvas[0].getContext('2d');
+
+function log (string, col) {
+	if (last === string) {
+		return;
+	}
+	last = string;
+	var $newE = $('<div></div>').css('color', col).text(string);
+	// $log.html(string + '<br>' + $log.html() );
+	$log.prepend($newE);
+}
+var Draw = {
+    lastx: undefined,
+    lasty: undefined,
+    stop: function () {
+        Draw.lastx = undefined;
+        Draw.lasty = undefined;
+    },
+    drawLine: function (x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        
+    },
+    line: function (x, y) {
+        Draw.drawLine(Draw.lastx, Draw.lasty, x*2, y*2);
+
+        try {
+            // when draing starts, first coords are undefined which cannot be saved to firebase
+            myDataRef.push({coords: {x1: Draw.lastx, y1: Draw.lasty, x2: x, y2: y}});
+        } catch (e) {}
+        
+
+        Draw.lastx = x*2;
+        Draw.lasty = y*2;
+    }
+};
+
+
+myDataRef.on('child_added', function (snapshot) {
+    var val = snapshot.val();
+    console.log(val);
+});
+
+$canvas.on('mousemove', function(e) {
+    if (mouseDown) {
+        ctx.fillStyle = "rgba(100,100,100,0.2)";
+        Draw.line(e.clientX, e.clientY);
+    }
+});
+$canvas.on('mousedown', function(e) {
+    mouseDown = true;
+    ctx.fillStyle = "rgba(123,234,012, 0.4)";
+    Draw.line(e.clientX, e.clientY);
+});
+$canvas.on('mouseup', function(e) {
+    mouseDown = false;
+    ctx.fillStyle = "rgba(012,123, 234, 0.4)";
+    Draw.stop();
+});
+
+$canvas.on("touchstart", function (e) {
+    ctx.fillStyle = "rgba(230,123, 230, 0.4)";
+    Draw.line(e.originalEvent.targetTouches[0].clientX, 
+    	e.originalEvent.targetTouches[0].clientY);
+});
+$canvas.on("touchend", function (e) {
+    ctx.fillStyle = "rgba(112,123, 234, 0.4)";
+    Draw.stop();
+});
+$canvas.on("touchmove", function (e) {
+    ctx.fillStyle = "rgba(66,66, 66, 0.2)";
+    Draw.line(e.originalEvent.targetTouches[0].clientX, 
+    	e.originalEvent.targetTouches[0].clientY);
+});
+// $canvas.on("touchcancel", function (e) {
+//     ctx.fillStyle = "rgba(012,123, 234, 0.4)";
+//     //log(e.type, 'rgba(012,123, 234, 1)');
+//     draw(e.clientX, e.clientY);
+// });
+// $canvas.on("touchleave", function (e) {
+//     ctx.fillStyle = "rgba(012,123, 234, 0.4)";
+//     log(e.type, 'rgba(012,123, 234, 1)');
+//     draw(e.clientX, e.clientY);
+// });
+
+$(window).resize(function () {
+	$canvas.attr({ 
+		width : $(this).innerWidth()*2,
+		height: $(this).innerHeight()*2
+	});
+}).resize();
+
+</script>
