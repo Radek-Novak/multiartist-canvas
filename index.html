@@ -101,18 +101,21 @@ $canvas.on('mouseup', function(e) {
 });
 
 $canvas.on("touchstart", function (e) {
-    ctx.fillStyle = "rgba(230,123, 230, 0.4)";
-    Draw.line(e.originalEvent.targetTouches[0].clientX, 
-    	e.originalEvent.targetTouches[0].clientY);
+    for (var i = 0, ii = touches.length; i < ii; i++) {
+        Draw.line(e.originalEvent.targetTouches[i].clientX, 
+            e.originalEvent.targetTouches[i].clientY);
+    }
 });
 $canvas.on("touchend", function (e) {
-    ctx.fillStyle = "rgba(112,123, 234, 0.4)";
     Draw.stop();
 });
 $canvas.on("touchmove", function (e) {
-    ctx.fillStyle = "rgba(66,66, 66, 0.2)";
-    Draw.line(e.originalEvent.targetTouches[0].clientX, 
-    	e.originalEvent.targetTouches[0].clientY);
+    var touches = e.originalEvent.targetTouches;
+    
+    for (var i = 0, ii = touches.length; i < ii; i++) {
+        Draw.line(e.originalEvent.targetTouches[i].clientX, 
+            e.originalEvent.targetTouches[i].clientY);
+    }
 });
 // $canvas.on("touchcancel", function (e) {
 //     ctx.fillStyle = "rgba(012,123, 234, 0.4)";
