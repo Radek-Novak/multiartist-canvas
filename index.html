@@ -37,6 +37,7 @@ var $canvas = $('canvas');
 var $log = $('#log').eq(0);
 var last = '';
 var ctx = $canvas[0].getContext('2d');
+var color = '#abc';
 
 function log (string, col) {
 	if (last === string) {
@@ -66,7 +67,7 @@ var Draw = {
 
         try {
             // when draing starts, first coords are undefined which cannot be saved to firebase
-            myDataRef.push({coords: {x1: Draw.lastx, y1: Draw.lasty, x2: x, y2: y}});
+            myDataRef.push({coords: {x1: Draw.lastx, y1: Draw.lasty, x2: x*2, y2: y*2}});
         } catch (e) {}
         
 
@@ -78,7 +79,8 @@ var Draw = {
 
 myDataRef.on('child_added', function (snapshot) {
     var val = snapshot.val();
-    console.log(val);
+    //console.log(snapshot);
+    Draw.drawLine(val.coords.x1, val.coords.y1, val.coords.x2, val.coords.y2);
 });
 
 $canvas.on('mousemove', function(e) {
